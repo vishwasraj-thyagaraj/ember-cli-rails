@@ -80,10 +80,21 @@ module EmberCli
       ].select(&:exist?)
     end
 
+    def prespawn(command)
+      # Safe perform 'nvm use' if `/.nvmrc` file exists
+      nvmrc_file_path = paths.root.to_s + '/.nvmrc'
+      if(File.file?(nvmrc_file_path))
+        cmd = "sh -c 'source ~/.nvm/nvm.sh && nvm use && #{command}'"
+      else
+        cmd = command
+      end
+    end
+
     def spawn(command)
+      cmd = prespawn(command)
       Kernel.spawn(
         env,
-        command,
+        cmd,
         chdir: paths.root.to_s,
         err: paths.build_error_file.to_s,
       ) || exit(1)
